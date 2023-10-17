@@ -37,37 +37,21 @@ if uploaded_credentials is not None:
                     if uploaded_file.type == 'application/vnd.ms-excel':
                         df = pd.read_csv(uploaded_file)
 
-                        # Verifique se o arquivo tem as colunas corretas
-                        if set(["data", "lat", "lon", "veiculo"]).issubset(df.columns):
+                        # Exiba as 10 primeiras linhas do arquivo
+                        st.subheader("Visualização das 10 Primeiras Linhas:")
+                        st.dataframe(df.head(10))
 
-                            # Verifique se o arquivo tem mais de 10 linhas
-                            if len(df) > 10:
-                                # Verifique se o arquivo já existe no GCS
-                                if storage_client is not None:
-                                    bucket = storage_client.get_bucket("seu-bucket")
-                                    blob_name = "nome-do-arquivo-no-gcs.csv"
-                                    blob = bucket.blob(blob_name)
+                        # Botão para enviar o arquivo
+                        if st.button("Enviar para o Google Cloud Storage"):
+                            # Resto do código para envio do arquivo
+                            # ...
 
-                                    if blob.exists():
-                                        st.error("O arquivo já existe no Google Cloud Storage.")
-                                    else:
-                                        # Envie o arquivo para o Google Cloud Storage
-                                        blob.upload_from_file(uploaded_file)
+                            st.success("Upload concluído com sucesso!")
 
-                                        # Barra de progresso
-                                        progress_bar = st.progress(0)
-                                        for percent_complete in range(100):
-                                            progress_bar.progress(percent_complete + 1)
-
-                                        st.success("Upload concluído com sucesso!")
-                                else:
-                                    st.error("Erro: Credenciais do Google Cloud não carregadas.")
-                            else:
-                                st.error("O arquivo deve conter mais de 10 linhas.")
-                        else:
-                            st.error("O arquivo deve ter as colunas 'data', 'lat', 'lon', 'veiculo'.")
                     else:
                         st.error("O arquivo deve ser um CSV.")
+                else:
+                    st.info("Carregue um arquivo CSV para visualizar e enviar.")
             else:
                 st.error("O arquivo de credenciais está faltando informações necessárias.")
         except Exception as e:
