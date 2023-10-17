@@ -2,7 +2,8 @@ import streamlit as st
 from google.cloud import storage
 import pandas as pd
 import json
-from google.auth import impersonated_credentials
+from google.auth.credentials import Credentials
+from google.auth import default
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Google Cloud Storage")
@@ -18,18 +19,17 @@ if uploaded_credentials is not None:
             # Lê as credenciais do arquivo JSON
             credentials_data = json.load(uploaded_credentials)
 
-            # Verifique se as credenciais têm as informações necessárias (project_id, private_key, client_email)
-            required_fields = ["project_id", "private_key", "client_email"]
-            if all(field in credentials_data for field in required_fields):
-                # Crie as credenciais compatíveis com google-auth-library-python
-                credentials = impersonated_credentials.Credentials.from_service_account_info(credentials_data)
+            # Inicialize as credenciais
+            credentials = Credentials.from_authorized_user_info(credentials_data)
 
-                # Inicialize o cliente do Google Cloud Storage com as credenciais
-                storage_client = storage.Client(credentials=credentials)
+            # Configurar o ambiente para usar as credenciais
+            default_credentials, _ = default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+            credentials = credentials.with_quota_project(default_credentials._quota_project)
 
-                st.success("Credenciais carregadas com sucesso!")
-            else:
-                st.error("O arquivo de credenciais está faltando informações necessárias.")
+            # Inicialize o cliente do Google Cloud Storage com as credenciais
+            storage_client = storage.Client(credentials=credentials)
+
+            st.success("Credenciais carregadas com sucesso!")
         except Exception as e:
             st.error(f"Erro ao carregar as credenciais: {e}")
 
