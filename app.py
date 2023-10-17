@@ -2,8 +2,8 @@ import streamlit as st
 from google.cloud import storage
 import pandas as pd
 import json
-from google.auth.credentials import Credentials
-from google.auth import default
+from google.auth import impersonated_credentials
+from google.auth.transport.requests import Request
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Google Cloud Storage")
@@ -19,15 +19,8 @@ if uploaded_credentials is not None:
             # Lê as credenciais do arquivo JSON
             credentials_data = json.load(uploaded_credentials)
 
-            # Inicialize as credenciais
-            credentials = Credentials.from_authorized_user_info(credentials_data)
-
-            # Configurar o ambiente para usar as credenciais
-            default_credentials, _ = default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
-            credentials = credentials.with_quota_project(default_credentials._quota_project)
-
             # Inicialize o cliente do Google Cloud Storage com as credenciais
-            storage_client = storage.Client(credentials=credentials)
+            storage_client = storage.Client(credentials=impersonated_credentials.Credentials.from_authorized_user_info(credentials_data, Request()))
 
             st.success("Credenciais carregadas com sucesso!")
         except Exception as e:
