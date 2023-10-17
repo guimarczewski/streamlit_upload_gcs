@@ -39,7 +39,7 @@ if uploaded_file is not None:
             if len(df) > 10:
                 if storage_client is not None:
                     # Verifique se o arquivo já existe no GCS
-                    bucket = storage_client.get_bucket("seu-bucket")
+                    bucket = storage_client.get_bucket("streamlit_upload_csv")
                     blob_name = "nome-do-arquivo-no-gcs.csv"
                     blob = bucket.blob(blob_name)
 
