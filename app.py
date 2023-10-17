@@ -40,21 +40,16 @@ if uploaded_file is not None:
                 if storage_client is not None:
                     # Verifique se o arquivo já existe no GCS
                     bucket = storage_client.get_bucket("streamlit_upload_csv")
-                    blob_name = "nome-do-arquivo-no-gcs.csv"
-                    blob = bucket.blob(blob_name)
 
-                    if blob.exists():
-                        st.error("O arquivo já existe no Google Cloud Storage.")
-                    else:
-                        # Envie o arquivo para o Google Cloud Storage
-                        blob.upload_from_file(uploaded_file)
+                    # Envie o arquivo para o Google Cloud Storage
+                    blob.upload_from_file(uploaded_file)
 
-                        # Barra de progresso
-                        progress_bar = st.progress(0)
-                        for percent_complete in range(100):
-                            progress_bar.progress(percent_complete + 1)
+                    # Barra de progresso
+                    progress_bar = st.progress(0)
+                    for percent_complete in range(100):
+                        progress_bar.progress(percent_complete + 1)
 
-                        st.success("Upload concluído com sucesso!")
+                    st.success("Upload concluído com sucesso!")
                 else:
                     st.error("Erro: Credenciais do Google Cloud não carregadas.")
             else:
