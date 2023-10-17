@@ -15,49 +15,61 @@ if uploaded_credentials is not None:
     if uploaded_credentials.type == 'application/json':
         try:
             # Lê as credenciais do arquivo JSON
-            credentials = json.load(uploaded_credentials)
+            credentials_data = json.load(uploaded_credentials)
 
-            # Inicialize o cliente do Google Cloud Storage com as credenciais
-            storage_client = storage.Client(credentials=credentials)
+            # Verifique se as credenciais têm as informações necessárias (project_id, private_key, client_email)
+            required_fields = ["project_id", "private_key", "client_email"]
+            if all(field in credentials_data for field in required_fields):
+                # Crie as credenciais compatíveis com google-auth-library-python
+                credentials = {
+                    "project_id": credentials_data["project_id"],
+                    "private_key": credentials_data["private_key"],
+                    "client_email": credentials_data["client_email"],
+                }
 
-            st.success("Credenciais carregadas com sucesso!")
+                # Inicialize o cliente do Google Cloud Storage com as credenciais
+                storage_client = storage.Client(credentials=credentials)
 
-            if uploaded_file is not None:
-                # Verifique se o arquivo é um CSV
-                if uploaded_file.type == 'application/vnd.ms-excel':
-                    df = pd.read_csv(uploaded_file)
+                st.success("Credenciais carregadas com sucesso!")
 
-                    # Verifique se o arquivo tem as colunas corretas
-                    if set(["data", "lat", "lon", "veiculo"]).issubset(df.columns):
+                if uploaded_file is not None:
+                    # Verifique se o arquivo é um CSV
+                    if uploaded_file.type == 'application/vnd.ms-excel':
+                        df = pd.read_csv(uploaded_file)
 
-                        # Verifique se o arquivo tem mais de 10 linhas
-                        if len(df) > 10:
-                            # Verifique se o arquivo já existe no GCS
-                            if storage_client is not None:
-                                bucket = storage_client.get_bucket("seu-bucket")
-                                blob_name = "nome-do-arquivo-no-gcs.csv"
-                                blob = bucket.blob(blob_name)
+                        # Verifique se o arquivo tem as colunas corretas
+                        if set(["data", "lat", "lon", "veiculo"]).issubset(df.columns):
 
-                                if blob.exists():
-                                    st.error("O arquivo já existe no Google Cloud Storage.")
+                            # Verifique se o arquivo tem mais de 10 linhas
+                            if len(df) > 10:
+                                # Verifique se o arquivo já existe no GCS
+                                if storage_client is not None:
+                                    bucket = storage_client.get_bucket("seu-bucket")
+                                    blob_name = "nome-do-arquivo-no-gcs.csv"
+                                    blob = bucket.blob(blob_name)
+
+                                    if blob.exists():
+                                        st.error("O arquivo já existe no Google Cloud Storage.")
+                                    else:
+                                        # Envie o arquivo para o Google Cloud Storage
+                                        blob.upload_from_file(uploaded_file)
+
+                                        # Barra de progresso
+                                        progress_bar = st.progress(0)
+                                        for percent_complete in range(100):
+                                            progress_bar.progress(percent_complete + 1)
+
+                                        st.success("Upload concluído com sucesso!")
                                 else:
-                                    # Envie o arquivo para o Google Cloud Storage
-                                    blob.upload_from_file(uploaded_file)
-
-                                    # Barra de progresso
-                                    progress_bar = st.progress(0)
-                                    for percent_complete in range(100):
-                                        progress_bar.progress(percent_complete + 1)
-
-                                    st.success("Upload concluído com sucesso!")
+                                    st.error("Erro: Credenciais do Google Cloud não carregadas.")
                             else:
-                                st.error("Erro: Credenciais do Google Cloud não carregadas.")
+                                st.error("O arquivo deve conter mais de 10 linhas.")
                         else:
-                            st.error("O arquivo deve conter mais de 10 linhas.")
+                            st.error("O arquivo deve ter as colunas 'data', 'lat', 'lon', 'veiculo'.")
                     else:
-                        st.error("O arquivo deve ter as colunas 'data', 'lat', 'lon', 'veiculo'.")
-                else:
-                    st.error("O arquivo deve ser um CSV.")
+                        st.error("O arquivo deve ser um CSV.")
+            else:
+                st.error("O arquivo de credenciais está faltando informações necessárias.")
         except Exception as e:
             st.error(f"Erro ao carregar as credenciais: {e}")
 
