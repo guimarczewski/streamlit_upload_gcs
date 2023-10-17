@@ -38,16 +38,10 @@ if uploaded_file is not None:
             # Verifique se o arquivo tem mais de 10 linhas
             if len(df) > 10:
                 if storage_client is not None:
-                    # Verifique se o arquivo já existe no GCS
-                    bucket = storage_client.get_bucket("streamlit_upload_csv")
-
-                    # Envie o arquivo para o Google Cloud Storage
-                    blob.upload_from_file(uploaded_file)
-
-                    # Barra de progresso
-                    progress_bar = st.progress(0)
-                    for percent_complete in range(100):
-                        progress_bar.progress(percent_complete + 1)
+                    # Faça o upload do arquivo diretamente para o Google Cloud Storage
+                    bucket_name = "seu-bucket"
+                    blob_name = "nome-do-arquivo-no-gcs.csv"
+                    storage_client.bucket(bucket_name).blob(blob_name).upload_from_file(uploaded_file)
 
                     st.success("Upload concluído com sucesso!")
                 else:
