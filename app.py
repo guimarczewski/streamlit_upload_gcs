@@ -40,7 +40,7 @@ if uploaded_file is not None:
             if len(df) > 10:
                 if storage_client is not None:
                     # Crie um arquivo temporário
-                    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                    with tempfile.NamedTemporaryFile(delete=False, mode='wb') as temp_file:
                         uploaded_file.seek(0)
                         temp_file.write(uploaded_file.read())
                         temp_file.seek(0)
