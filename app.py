@@ -3,6 +3,7 @@ from google.cloud import storage
 import pandas as pd
 import json
 from google.oauth2 import service_account
+import tempfile
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Google Cloud Storage")
@@ -38,12 +39,18 @@ if uploaded_file is not None:
             # Verifique se o arquivo tem mais de 10 linhas
             if len(df) > 10:
                 if storage_client is not None:
-                    # Faça o upload do arquivo diretamente para o Google Cloud Storage
-                    bucket_name = "seu-bucket"
-                    blob_name = "nome-do-arquivo-no-gcs.csv"
-                    storage_client.bucket(bucket_name).blob(blob_name).upload_from_file(uploaded_file)
+                    # Crie um arquivo temporário
+                    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                        uploaded_file.seek(0)
+                        temp_file.write(uploaded_file.read())
+                        temp_file.seek(0)
 
-                    st.success("Upload concluído com sucesso!")
+                        # Faça o upload do arquivo temporário para o Google Cloud Storage
+                        bucket_name = "streamlit_upload_csv"
+                        blob_name = uploaded_file
+                        storage_client.bucket(bucket_name).blob(blob_name).upload_from_file(temp_file.name)
+
+                        st.success("Upload concluído com sucesso!")
                 else:
                     st.error("Erro: Credenciais do Google Cloud não carregadas.")
             else:
