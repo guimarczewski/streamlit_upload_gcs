@@ -35,17 +35,40 @@ if uploaded_credentials is not None:
             st.error(f"Erro ao carregar as credenciais: {e}")
 
 if uploaded_file is not None:
-    # Exiba as 10 primeiras linhas do arquivo
-    st.subheader("Visualização das 10 Primeiras Linhas:")
-    df = pd.read_csv(uploaded_file)
-    st.dataframe(df.head(10))
+    # Verifique se o arquivo é um CSV
+    if uploaded_file.type == 'application/vnd.ms-excel':
+        df = pd.read_csv(uploaded_file)
 
-    # Botão para enviar o arquivo
-    if st.button("Enviar para o Google Cloud Storage"):
-        if storage_client is not None:
-            # Resto do código para envio do arquivo
-            # ...
+        # Verifique se o arquivo tem as colunas corretas
+        if set(["data", "lat", "lon", "veiculo"]).issubset(df.columns):
 
-            st.success("Upload concluído com sucesso!")
+            # Verifique se o arquivo tem mais de 10 linhas
+            if len(df) > 10:
+                if storage_client is not None:
+                    # Verifique se o arquivo já existe no GCS
+                    bucket = storage_client.get_bucket("seu-bucket")
+                    blob_name = "nome-do-arquivo-no-gcs.csv"
+                    blob = bucket.blob(blob_name)
+
+                    if blob.exists():
+                        st.error("O arquivo já existe no Google Cloud Storage.")
+                    else:
+                        # Envie o arquivo para o Google Cloud Storage
+                        blob.upload_from_file(uploaded_file)
+
+                        # Barra de progresso
+                        progress_bar = st.progress(0)
+                        for percent_complete in range(100):
+                            progress_bar.progress(percent_complete + 1)
+
+                        st.success("Upload concluído com sucesso!")
+                else:
+                    st.error("Erro: Credenciais do Google Cloud não carregadas.")
+            else:
+                st.error("O arquivo deve conter mais de 10 linhas.")
+        else:
+            st.error("O arquivo deve ter as colunas 'data', 'lat', 'lon', 'veiculo'.")
+    else:
+        st.error("O arquivo deve ser um CSV.")
 
 # Fim do seu código Streamlit
