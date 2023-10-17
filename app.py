@@ -6,7 +6,7 @@ from google.auth import impersonated_credentials
 from google.auth.transport.requests import Request
 
 # Configuração do aplicativo
-st.title("Upload de Arquivos para Google Cloud Storage")
+st.title("Upload de Arquivos CSV para Google Cloud Storage")
 uploaded_credentials = st.file_uploader("Faça o upload do arquivo de credenciais JSON")
 uploaded_file = st.file_uploader("Faça o upload do arquivo CSV")
 
