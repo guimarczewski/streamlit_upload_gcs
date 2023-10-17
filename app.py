@@ -3,7 +3,7 @@ from google.cloud import storage
 import pandas as pd
 import json
 from google.oauth2 import service_account
-import io
+from google.cloud.storage.blob import Blob
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Google Cloud Storage")
@@ -39,15 +39,14 @@ if uploaded_file is not None:
             # Verifique se o arquivo tem mais de 10 linhas
             if len(df) > 10:
                 if storage_client is not None:
-                    # Faça o upload do arquivo diretamente para o Google Cloud Storage
+                    # Defina o nome do bucket e o nome do objeto (arquivo) no GCS
                     bucket_name = "streamlit_upload_csv"
                     blob_name = uploaded_file
-                    bucket = storage_client.bucket(bucket_name)
-                    blob = bucket.blob(blob_name)
 
-                    # Use o buffer de leitura para fazer o upload
-                    with io.BytesIO(uploaded_file.read()) as buffer:
-                        blob.upload_from_file(buffer)
+                    # Carregue o arquivo no GCS
+                    bucket = storage_client.bucket(bucket_name)
+                    blob = Blob(blob_name, bucket)
+                    blob.upload_from_file(uploaded_file)
 
                     st.success("Upload concluído com sucesso!")
                 else:
