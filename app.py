@@ -40,7 +40,7 @@ if uploaded_file is not None:
             if len(df) > 10:
                 if storage_client is not None:
                     # Crie um arquivo temporário
-                    with tempfile.NamedTemporaryFile(delete=False, mode='wb') as temp_file:
+                    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                         uploaded_file.seek(0)
                         temp_file.write(uploaded_file.read())
                         temp_file.seek(0)
@@ -48,7 +48,9 @@ if uploaded_file is not None:
                         # Faça o upload do arquivo temporário para o Google Cloud Storage
                         bucket_name = "streamlit_upload_csv"
                         blob_name = uploaded_file
-                        storage_client.bucket(bucket_name).blob(blob_name).upload_from_file(temp_file.name)
+                        bucket = storage_client.bucket(bucket_name)
+                        blob = bucket.blob(blob_name)
+                        blob.upload_from_file(temp_file.name)
 
                         st.success("Upload concluído com sucesso!")
                 else:
