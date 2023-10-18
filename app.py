@@ -4,6 +4,7 @@ import pandas as pd
 import json
 from google.oauth2 import service_account
 from google.cloud.storage.blob import Blob
+import io
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Google Cloud Storage")
@@ -35,7 +36,11 @@ if uploaded_file is not None:
         # Converte o stream para bytes
         data = uploaded_file.read()
 
-        df = pd.read_csv(data)
+        # Converte o bytes object para um file-like object
+        file_like_object = io.BytesIO(data)
+
+        # Lê o arquivo CSV
+        df = pd.read_csv(file_like_object)
 
         # Verifique se o arquivo tem as colunas corretas
         if set(["data", "lat", "lon", "veiculo"]).issubset(df.columns):
