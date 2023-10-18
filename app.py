@@ -85,7 +85,7 @@ if selected_tab == "Aba de Validação":
             st.error("The file must be a CSV.")
 
 if selected_tab == "Aba de Upload":
-    # Aba para fazer o upload sem verificações
+    # Tab to upload without verifications
 
     uploaded_credentials = st.file_uploader("Upload JSON credentials file")
 
@@ -110,7 +110,6 @@ if selected_tab == "Aba de Upload":
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(uploaded_file.read())
 
-        st.success("File uploaded successfully!")
 
         # Button to upload the file to GCS
         if st.button("Upload"):
@@ -124,7 +123,7 @@ if selected_tab == "Aba de Upload":
                     blob = bucket.blob(blob_name)
                     blob.upload_from_filename(temp_file.name)
 
-                    st.success("Manual Upload completed successfully!")
+                    st.success("Upload completed successfully!")
                 except Exception as e:
                     # Display the error message
                     st.error(e)
