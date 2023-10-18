@@ -4,10 +4,11 @@ import pandas as pd
 import json
 from google.oauth2 import service_account
 import tempfile
+from google.api_core.exceptions import Forbidden
+from google.cloud.exceptions import NotFound
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Google Cloud Storage")
-bucket = st.file_uploader("Insira o nome do Bucket")
 uploaded_credentials = st.file_uploader("Faça o upload do arquivo de credenciais JSON")
 uploaded_file = st.file_uploader("Faça o upload do arquivo CSV")
 
@@ -52,15 +53,23 @@ if uploaded_file is not None:
                 if st.button("Fazer Upload"):
                     if storage_client is not None:
                         # Defina o nome do bucket e o nome do objeto (arquivo) no GCS
-                        bucket_name = bucket
+                        bucket_name = "streamlit_upload_csv"
                         blob_name = uploaded_file.name
 
-                        # Carregue o arquivo no GCS
-                        bucket = storage_client.bucket(bucket_name)
-                        blob = bucket.blob(blob_name)
-                        blob.upload_from_filename(temp_file.name)
-
-                        st.success("Upload concluído com sucesso!")
+                        try:
+                            # Tente obter o bucket
+                            bucket = storage_client.bucket(bucket_name)
+                            # Verifique se o bucket existe
+                            if not bucket.exists():
+                                st.error("O bucket especificado não existe.")
+                            else:
+                                blob = bucket.blob(blob_name)
+                                blob.upload_from_filename(temp_file.name)
+                                st.success("Upload concluído com sucesso!")
+                        except Forbidden:
+                            st.error("Erro: Você não tem permissão para acessar o bucket.")
+                        except NotFound:
+                            st.error("O bucket especificado não existe.")
                     else:
                         st.error("Erro: Credenciais do Google Cloud não carregadas.")
             else:
