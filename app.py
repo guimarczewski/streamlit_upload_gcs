@@ -41,7 +41,7 @@ if uploaded_file is not None:
                 if storage_client is not None:
                     # Defina o nome do bucket e o nome do objeto (arquivo) no GCS
                     bucket_name = "streamlit_upload_csv"
-                    blob_name = uploaded_file
+                    blob_name = uploaded_file.name
 
                     # Carregue o arquivo no GCS
                     bucket = storage_client.bucket(bucket_name)
@@ -58,4 +58,4 @@ if uploaded_file is not None:
     else:
         st.error("O arquivo deve ser um CSV.")
 
-# Fim do seu código Streamlit
+# Fim do seu código
