@@ -7,6 +7,7 @@ import tempfile
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Google Cloud Storage")
+bucket = st.file_uploader("Insira o nome do Bucket")
 uploaded_credentials = st.file_uploader("Faça o upload do arquivo de credenciais JSON")
 uploaded_file = st.file_uploader("Faça o upload do arquivo CSV")
 
@@ -51,7 +52,7 @@ if uploaded_file is not None:
                 if st.button("Fazer Upload"):
                     if storage_client is not None:
                         # Defina o nome do bucket e o nome do objeto (arquivo) no GCS
-                        bucket_name = "streamlit_upload_csv"
+                        bucket_name = bucket
                         blob_name = uploaded_file.name
 
                         # Carregue o arquivo no GCS
