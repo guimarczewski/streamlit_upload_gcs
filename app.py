@@ -32,10 +32,10 @@ if uploaded_file is not None:
     # Verifique se o arquivo é um CSV
     if uploaded_file.type == 'text/csv':
 
-        # Reseta a posição do stream para o início
-        uploaded_file.seek(0)
+        # Converte o stream para bytes
+        data = uploaded_file.read()
 
-        df = pd.read_csv(uploaded_file)
+        df = pd.read_csv(data)
 
         # Verifique se o arquivo tem as colunas corretas
         if set(["data", "lat", "lon", "veiculo"]).issubset(df.columns):
@@ -50,7 +50,7 @@ if uploaded_file is not None:
                     # Carregue o arquivo no GCS
                     bucket = storage_client.bucket(bucket_name)
                     blob = Blob(blob_name, bucket)
-                    blob.upload_from_file(uploaded_file)
+                    blob.upload_from_file(data)
 
                     st.success("Upload concluído com sucesso!")
                 else:
