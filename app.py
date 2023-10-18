@@ -12,6 +12,9 @@ st.title("Upload de Arquivos para Google Cloud Storage")
 uploaded_credentials = st.file_uploader("Faça o upload do arquivo de credenciais JSON")
 uploaded_file = st.file_uploader("Faça o upload do arquivo CSV")
 
+# Campo de entrada para o nome do bucket
+bucket_name = st.text_input("Nome do Bucket")
+
 storage_client = None  # Inicialize o cliente do Google Cloud Storage
 
 if uploaded_credentials is not None:
@@ -52,10 +55,6 @@ if uploaded_file is not None:
                 # Botão para fazer o upload
                 if st.button("Fazer Upload"):
                     if storage_client is not None:
-                        # Defina o nome do bucket e o nome do objeto (arquivo) no GCS
-                        bucket_name = "streamlit_upload_csv"
-                        blob_name = uploaded_file.name
-
                         try:
                             # Tente obter o bucket
                             bucket = storage_client.bucket(bucket_name)
@@ -63,6 +62,7 @@ if uploaded_file is not None:
                             if not bucket.exists():
                                 st.error("O bucket especificado não existe.")
                             else:
+                                blob_name = uploaded_file.name
                                 blob = bucket.blob(blob_name)
                                 blob.upload_from_filename(temp_file.name)
                                 st.success("Upload concluído com sucesso!")
