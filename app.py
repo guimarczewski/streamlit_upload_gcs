@@ -4,6 +4,8 @@ import pandas as pd
 import json
 from google.oauth2 import service_account
 import tempfile
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Cloud")
