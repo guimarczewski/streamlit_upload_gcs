@@ -3,8 +3,7 @@ from google.cloud import storage
 import pandas as pd
 import json
 from google.oauth2 import service_account
-from google.cloud.storage.blob import Blob
-import io
+import tempfile
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Google Cloud Storage")
@@ -33,14 +32,12 @@ if uploaded_file is not None:
     # Verifique se o arquivo é um CSV
     if uploaded_file.type == 'text/csv':
 
-        # Converte o stream para bytes
-        data = uploaded_file.read()
-
-        # Converte os bytes para um objeto io.BytesIO
-        file_like_object = io.BytesIO(data)
+        # Crie um arquivo temporário para salvar o arquivo CSV
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(uploaded_file.read())
 
         # Lê o arquivo CSV
-        df = pd.read_csv(file_like_object)
+        df = pd.read_csv(temp_file.name)
 
         # Verifique se o arquivo tem as colunas corretas
         if set(["data", "lat", "lon", "veiculo"]).issubset(df.columns):
@@ -54,8 +51,8 @@ if uploaded_file is not None:
 
                     # Carregue o arquivo no GCS
                     bucket = storage_client.bucket(bucket_name)
-                    blob = Blob(blob_name, bucket)
-                    blob.upload_from_file(file_like_object)
+                    blob = bucket.blob(blob_name)
+                    blob.upload_from_filename(temp_file.name)
 
                     st.success("Upload concluído com sucesso!")
                 else:
