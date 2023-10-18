@@ -85,7 +85,7 @@ if selected_tab == "Aba de Validação":
             st.error("The file must be a CSV.")
 
 if selected_tab == "Aba de Upload":
-    # Aba apenas para fazer o upload e exibir o preview se for um arquivo CSV
+    # Aba para fazer o upload sem verificações
 
     uploaded_credentials = st.file_uploader("Upload JSON credentials file")
 
