@@ -113,19 +113,20 @@ if selected_tab == "Aba de Upload":
         st.success("File uploaded successfully!")
 
         # Button to upload the file to GCS
-        if storage_client is not None:
-            # Set the object (file) name in GCS
-            blob_name = uploaded_file.name
+        if st.button("Upload"):
+            if storage_client is not None:
+                # Set the object (file) name in GCS
+                blob_name = uploaded_file.name
 
-            try:
-                # Upload the file to GCS
-                bucket = storage_client.bucket(bucket_name)
-                blob = bucket.blob(blob_name)
-                blob.upload_from_filename(temp_file.name)
+                try:
+                    # Upload the file to GCS
+                    bucket = storage_client.bucket(bucket_name)
+                    blob = bucket.blob(blob_name)
+                    blob.upload_from_filename(temp_file.name)
 
-                st.success("Upload completed successfully!")
-            except Exception as e:
-                # Display the error message
-                st.error(e)
-        else:
-            st.error("Error: Google Cloud credentials not loaded.")
+                    st.success("Manual Upload completed successfully!")
+                except Exception as e:
+                    # Display the error message
+                    st.error(e)
+            else:
+                st.error("Error: Google Cloud credentials not loaded.")
