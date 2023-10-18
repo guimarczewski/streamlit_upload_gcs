@@ -44,19 +44,24 @@ if uploaded_file is not None:
 
             # Verifique se o arquivo tem mais de 10 linhas
             if len(df) > 10:
-                if storage_client is not None:
-                    # Defina o nome do bucket e o nome do objeto (arquivo) no GCS
-                    bucket_name = "streamlit_upload_csv"
-                    blob_name = uploaded_file.name
+                # Exiba as 10 primeiras linhas do arquivo CSV
+                st.dataframe(df.head(10))
 
-                    # Carregue o arquivo no GCS
-                    bucket = storage_client.bucket(bucket_name)
-                    blob = bucket.blob(blob_name)
-                    blob.upload_from_filename(temp_file.name)
+                # Botão para fazer o upload
+                if st.button("Fazer Upload"):
+                    if storage_client is not None:
+                        # Defina o nome do bucket e o nome do objeto (arquivo) no GCS
+                        bucket_name = "streamlit_upload_csv"
+                        blob_name = uploaded_file.name
 
-                    st.success("Upload concluído com sucesso!")
-                else:
-                    st.error("Erro: Credenciais do Google Cloud não carregadas.")
+                        # Carregue o arquivo no GCS
+                        bucket = storage_client.bucket(bucket_name)
+                        blob = bucket.blob(blob_name)
+                        blob.upload_from_filename(temp_file.name)
+
+                        st.success("Upload concluído com sucesso!")
+                    else:
+                        st.error("Erro: Credenciais do Google Cloud não carregadas.")
             else:
                 st.error("O arquivo deve conter mais de 10 linhas.")
         else:
