@@ -6,7 +6,7 @@ from google.oauth2 import service_account
 import tempfile
 
 # Configuração do aplicativo
-st.title("Upload de Arquivos para Cloud")
+st.title("Upload de Arquivos para o Google Cloud Storage")
 uploaded_credentials = st.file_uploader("Faça o upload do arquivo de credenciais JSON")
 
 # Campo de entrada para o nome do bucket
