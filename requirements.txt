@@ -2,6 +2,3 @@ streamlit
 google-auth
 pandas
 google-cloud-storage==1.38.0
-json
-boto3
-botocore
