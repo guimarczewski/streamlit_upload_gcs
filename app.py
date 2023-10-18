@@ -5,127 +5,84 @@ import json
 from google.oauth2 import service_account
 import tempfile
 
-# Application Configuration
-st.title("Upload Files to Google Cloud Storage")
+class GoogleCloudUploader:
+    def __init__(self):
+        st.title("Upload Files to Google Cloud Storage")
+        self.storage_client = None
 
-# Add a sidebar to select the tab
-selected_tab = st.sidebar.selectbox("Select a tab:", ["Upload File","Upload CSV with validation"])
-
-# Initialize the Google Cloud Storage client
-storage_client = None
-
-if selected_tab == "Upload File":
-    # Tab to upload without verifications
-
-    uploaded_credentials = st.file_uploader("Upload JSON credentials file")
-
-    # Input field for the bucket name
-    bucket_name = st.text_input("Bucket Name")
-
-    uploaded_file = st.file_uploader("Upload any file")
-
-    if uploaded_credentials is not None:
+    def load_credentials(self, uploaded_credentials):
         try:
             credentials_data = json.load(uploaded_credentials)
             credentials = service_account.Credentials.from_service_account_info(credentials_data)
-            storage_client = storage.Client(credentials=credentials)
-
+            self.storage_client = storage.Client(credentials=credentials)
             st.success("Credentials loaded successfully!")
-
         except Exception as e:
             st.error(f"Error loading credentials: {e}")
 
-    if uploaded_file is not None:
-        # Create a temporary file to save the uploaded file
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            temp_file.write(uploaded_file.read())
-
-
-        # Button to upload the file to GCS
-        if st.button("Upload"):
-            if storage_client is not None:
-                # Set the object (file) name in GCS
-                blob_name = uploaded_file.name
-
-                try:
-                    # Upload the file to GCS
-                    bucket = storage_client.bucket(bucket_name)
-                    blob = bucket.blob(blob_name)
-                    blob.upload_from_filename(temp_file.name)
-
-                    st.success("Upload completed successfully!")
-                except Exception as e:
-                    # Display the error message
-                    st.error(e)
-            else:
-                st.error("Error: Google Cloud credentials not loaded.")
-
-if selected_tab == "Upload CSV with validation":
-    # Tab with file type validation, columns and number of lines
-    uploaded_credentials = st.file_uploader("Upload JSON credentials file")
-
-    # Input field for the bucket name
-    bucket_name = st.text_input("Bucket Name")
-
-    uploaded_file = st.file_uploader("Upload CSV file")
-
-    if uploaded_credentials is not None:
-        # Check if the file is a JSON
-        if uploaded_credentials.type == 'application/json':
-            try:
-                # Read credentials from the JSON file
-                credentials_data = json.load(uploaded_credentials)
-
-                # Initialize the Google Cloud Storage client with credentials
-                credentials = service_account.Credentials.from_service_account_info(credentials_data)
-                storage_client = storage.Client(credentials=credentials)
-
-                st.success("Credentials loaded successfully!")
-
-            except Exception as e:
-                st.error(f"Error loading credentials: {e}")
-
-    if uploaded_file is not None:
-        # Check if the file is a CSV
-        if uploaded_file.type == 'text/csv':
-
-            # Create a temporary file to save the CSV file
+    def upload_file(self, bucket_name, uploaded_file):
+        if self.storage_client is not None:
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                 temp_file.write(uploaded_file.read())
+                
+            blob_name = uploaded_file.name
+            bucket = self.storage_client.bucket(bucket_name)
+            blob = bucket.blob(blob_name)
 
-            # Read the CSV file
-            df = pd.read_csv(temp_file.name)
-
-            # Check if the file has the correct columns
-            if set(["data", "lat", "lon", "vehicle"]).issubset(df.columns):
-
-                # Check if the file has more than 10 rows
-                if len(df) > 10:
-                    # Display the first 10 rows of the CSV file
-                    st.dataframe(df.head(10))
-
-                    # Button to upload the file
-                    if st.button("Upload"):
-                        if storage_client is not None:
-                            # Set the object (file) name in GCS
-                            blob_name = uploaded_file.name
-
-                            try:
-                                # Upload the file to GCS
-                                bucket = storage_client.bucket(bucket_name)
-                                blob = bucket.blob(blob_name)
-                                blob.upload_from_filename(temp_file.name)
-
-                                st.success("Upload completed successfully!")
-                            except Exception as e:
-                                # Display the error message
-                                st.error(e)
-                        else:
-                            st.error("Error: Google Cloud credentials not loaded.")
+            if blob.exists():
+                replace_existing = st.checkbox("The file already exists. Do you want to replace it?")
+                if not replace_existing:
+                    st.warning("Upload canceled. The existing file will not be replaced.")
                 else:
-                    st.error("The file must have more than 10 rows.")
+                    try:
+                        blob.upload_from_filename(temp_file.name)
+                        st.success("Upload completed successfully!")
+                    except Exception as e:
+                        st.error(e)
             else:
-                st.error("The file must have columns 'data', 'lat', 'lon', 'vehicle'.")
+                try:
+                    blob.upload_from_filename(temp_file.name)
+                    st.success("Upload completed successfully!")
+                except Exception as e:
+                    st.error(e)
         else:
-            st.error("The file must be a CSV.")
+            st.error("Error: Google Cloud credentials not loaded")
 
+class UploadFileTab:
+    def __init__(self, uploader):
+        self.uploader = uploader
+        uploaded_credentials = st.file_uploader("Upload JSON credentials file")
+        bucket_name = st.text_input("Bucket Name")
+        uploaded_file = st.file_uploader("Upload any file")
+
+        if uploaded_credentials:
+            self.uploader.load_credentials(uploaded_credentials)
+
+        if uploaded_file:
+            if st.button("Upload"):
+                self.uploader.upload_file(bucket_name, uploaded_file)
+
+class UploadCSVTab:
+    def __init__(self, uploader):
+        self.uploader = uploader
+        uploaded_credentials = st.file_uploader("Upload JSON credentials file")
+        bucket_name = st.text_input("Bucket Name")
+        uploaded_file = st.file_uploader("Upload CSV file")
+
+        if uploaded_credentials:
+            self.uploader.load_credentials(uploaded_credentials)
+
+        if uploaded_file:
+            if st.button("Upload"):
+                self.uploader.upload_file(bucket_name, uploaded_file)
+
+def main():
+    selected_tab = st.sidebar.selectbox("Select a tab:", ["Upload File", "Upload CSV with validation"])
+    uploader = GoogleCloudUploader()
+
+    if selected_tab == "Upload File":
+        UploadFileTab(uploader)
+    elif selected_tab == "Upload CSV with validation":
+        UploadCSVTab(uploader)
+
+if __name__ == "__main__":
+    main()
