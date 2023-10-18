@@ -57,25 +57,12 @@ if uploaded_file is not None:
                         # Defina o nome do objeto (arquivo) no GCS
                         blob_name = uploaded_file.name
 
-                        # Crie uma barra de progresso
-                        progress_bar = st.progress(0)
-
-                        # Comece o upload do arquivo
                         try:
+                            # Carregue o arquivo no GCS
                             bucket = storage_client.bucket(bucket_name)
                             blob = bucket.blob(blob_name)
-                            blob.upload_from_filename(temp_file.name,
-                                                     content_type="text/csv")
+                            blob.upload_from_filename(temp_file.name)
 
-                            # Atualize a barra de progresso
-                            progress_bar.progress(blob.progress() * 100)
-                            st.write("Upload em andamento...")
-
-                            # Aguarde até que o upload esteja concluído
-                            blob.wait_until_ready()
-
-                            # Upload concluído
-                            progress_bar.progress(100)
                             st.success("Upload concluído com sucesso!")
                         except Exception as e:
                             # Exiba a mensagem de erro
