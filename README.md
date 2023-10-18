@@ -20,3 +20,5 @@ Next project steps:
 - Integration with AWS and Azure
 - Analysis of the uploaded data: number of rows, null values...
 - Slack message when the file is sent
+
+Additionally, a new tab has been added to enable the upload of files of any type with no verifications.
