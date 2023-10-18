@@ -31,6 +31,10 @@ if uploaded_credentials is not None:
 if uploaded_file is not None:
     # Verifique se o arquivo é um CSV
     if uploaded_file.type == 'text/csv':
+
+        # Reseta a posição do stream para o início
+        uploaded_file.seek(0)
+
         df = pd.read_csv(uploaded_file)
 
         # Verifique se o arquivo tem as colunas corretas
