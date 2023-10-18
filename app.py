@@ -92,7 +92,7 @@ if selected_tab == "Aba de Upload":
     # Input field for the bucket name
     bucket_name = st.text_input("Bucket Name")
 
-    uploaded_file = st.file_uploader("Upload CSV file")
+    uploaded_file = st.file_uploader("Upload any file")
 
     if uploaded_credentials is not None:
         try:
@@ -106,31 +106,26 @@ if selected_tab == "Aba de Upload":
             st.error(f"Error loading credentials: {e}")
 
     if uploaded_file is not None:
-        # Check if the file is a CSV
-        if uploaded_file.type == 'text/csv':
-            # Create a temporary file to save the CSV file
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                temp_file.write(uploaded_file.read())
+        # Create a temporary file to save the uploaded file
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(uploaded_file.read())
 
-            # Display the first 10 rows of the CSV file
-            df = pd.read_csv(temp_file.name)
-            st.dataframe(df.head(10))
+        st.success("File uploaded successfully!")
 
-            # Button to upload the file
-            if st.button("Upload"):
-                if storage_client is not None:
-                    # Set the object (file) name in GCS
-                    blob_name = uploaded_file.name
+        # Button to upload the file to GCS
+        if storage_client is not None:
+            # Set the object (file) name in GCS
+            blob_name = uploaded_file.name
 
-                    try:
-                        # Upload the file to GCS
-                        bucket = storage_client.bucket(bucket_name)
-                        blob = bucket.blob(blob_name)
-                        blob.upload_from_filename(temp_file.name)
+            try:
+                # Upload the file to GCS
+                bucket = storage_client.bucket(bucket_name)
+                blob = bucket.blob(blob_name)
+                blob.upload_from_filename(temp_file.name)
 
-                        st.success("Upload completed successfully!")
-                    except Exception as e:
-                        # Display the error message
-                        st.error(e)
-                else:
-                    st.error("Error: Google Cloud credentials not loaded.")
+                st.success("Upload completed successfully!")
+            except Exception as e:
+                # Display the error message
+                st.error(e)
+        else:
+            st.error("Error: Google Cloud credentials not loaded.")
