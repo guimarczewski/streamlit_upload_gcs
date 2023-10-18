@@ -1,4 +1,4 @@
-# streamlit_upload_gcs
+# Streamlit Upload Files to Google Cloud Storage
 
 Streamlit App created for uploading files to Google Cloud Storage.
 Available at https://cloud-upload-files.streamlit.app/
