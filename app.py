@@ -36,7 +36,7 @@ if uploaded_file is not None:
         # Converte o stream para bytes
         data = uploaded_file.read()
 
-        # Converte o bytes object para um file-like object
+        # Converte os bytes para um objeto io.BytesIO
         file_like_object = io.BytesIO(data)
 
         # Lê o arquivo CSV
