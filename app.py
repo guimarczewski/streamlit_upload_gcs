@@ -57,16 +57,30 @@ if uploaded_file is not None:
                         # Defina o nome do objeto (arquivo) no GCS
                         blob_name = uploaded_file.name
 
+                        # Crie uma barra de progresso
+                        progress_bar = st.progress(0)
+
+                        # Comece o upload do arquivo
                         try:
-                            # Carregue o arquivo no GCS
                             bucket = storage_client.bucket(bucket_name)
                             blob = bucket.blob(blob_name)
-                            blob.upload_from_filename(temp_file.name)
+                            blob.upload_from_filename(temp_file.name,
+                                                     content_type="text/csv")
 
+                            # Atualize a barra de progresso
+                            while blob.state != "READY":
+                                progress_bar.progress(blob.progress())
+                                st.write("Upload em andamento...")
+
+                            # Upload concluído
+                            progress_bar.progress(100)
                             st.success("Upload concluído com sucesso!")
                         except Exception as e:
+                            # Extraia a mensagem de erro
+                            error_message = e.error[0].message
+
                             # Exiba a mensagem de erro
-                            st.error(e)
+                            st.error(error_message)
                     else:
                         st.error("Erro: Credenciais do Google Cloud não carregadas.")
             else:
