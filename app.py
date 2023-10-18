@@ -55,7 +55,7 @@ if uploaded_file is not None:
                     # Carregue o arquivo no GCS
                     bucket = storage_client.bucket(bucket_name)
                     blob = Blob(blob_name, bucket)
-                    blob.upload_from_file(data)
+                    blob.upload_from_file(file_like_object)
 
                     st.success("Upload concluído com sucesso!")
                 else:
