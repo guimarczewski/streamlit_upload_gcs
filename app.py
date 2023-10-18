@@ -68,8 +68,8 @@ if uploaded_file is not None:
                                                      content_type="text/csv")
 
                             # Atualize a barra de progresso
-                            while blob.state != "READY":
-                                progress_bar.progress(blob.progress())
+                            while not blob.done():
+                                progress_bar.progress(blob.progress() * 100)
                                 st.write("Upload em andamento...")
 
                             # Upload concluído
