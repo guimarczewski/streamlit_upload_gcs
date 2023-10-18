@@ -4,15 +4,9 @@ import pandas as pd
 import json
 from google.oauth2 import service_account
 import tempfile
-import boto3
-from botocore.exceptions import NoCredentialsError
 
 # Configuração do aplicativo
 st.title("Upload de Arquivos para Cloud")
-
-# Escolher a cloud
-cloud_service = st.selectbox("Escolha o serviço de armazenamento:", ("Google Cloud Storage", "Amazon S3"))
-
 uploaded_credentials = st.file_uploader("Faça o upload do arquivo de credenciais JSON")
 
 # Campo de entrada para o nome do bucket
