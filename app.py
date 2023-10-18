@@ -5,75 +5,75 @@ import json
 from google.oauth2 import service_account
 import tempfile
 
-# Configuração do aplicativo
-st.title("Upload de Arquivos para o Google Cloud Storage")
-uploaded_credentials = st.file_uploader("Faça o upload do arquivo de credenciais JSON")
+# Application Configuration
+st.title("Upload Files to Google Cloud Storage")
+uploaded_credentials = st.file_uploader("Upload JSON credentials file")
 
-# Campo de entrada para o nome do bucket
-bucket_name = st.text_input("Nome do Bucket")
+# Input field for the bucket name
+bucket_name = st.text_input("Bucket Name")
 
-uploaded_file = st.file_uploader("Faça o upload do arquivo CSV")
+uploaded_file = st.file_uploader("Upload CSV file")
 
-storage_client = None  # Inicialize o cliente do Google Cloud Storage
+storage_client = None  # Initialize the Google Cloud Storage client
 
 if uploaded_credentials is not None:
-    # Verifique se o arquivo é um JSON
+    # Check if the file is a JSON
     if uploaded_credentials.type == 'application/json':
         try:
-            # Lê as credenciais do arquivo JSON
+            # Read credentials from the JSON file
             credentials_data = json.load(uploaded_credentials)
 
-            # Inicialize o cliente do Google Cloud Storage com as credenciais
+            # Initialize the Google Cloud Storage client with credentials
             credentials = service_account.Credentials.from_service_account_info(credentials_data)
             storage_client = storage.Client(credentials=credentials)
 
-            st.success("Credenciais carregadas com sucesso!")
+            st.success("Credentials loaded successfully!")
 
         except Exception as e:
-            st.error(f"Erro ao carregar as credenciais: {e}")
+            st.error(f"Error loading credentials: {e}")
 
 if uploaded_file is not None:
-    # Verifique se o arquivo é um CSV
+    # Check if the file is a CSV
     if uploaded_file.type == 'text/csv':
 
-        # Crie um arquivo temporário para salvar o arquivo CSV
+        # Create a temporary file to save the CSV file
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(uploaded_file.read())
 
-        # Lê o arquivo CSV
+        # Read the CSV file
         df = pd.read_csv(temp_file.name)
 
-        # Verifique se o arquivo tem as colunas corretas
-        if set(["data", "lat", "lon", "veiculo"]).issubset(df.columns):
+        # Check if the file has the correct columns
+        if set(["data", "lat", "lon", "vehicle"]).issubset(df.columns):
 
-            # Verifique se o arquivo tem mais de 10 linhas
+            # Check if the file has more than 10 rows
             if len(df) > 10:
-                # Exiba as 10 primeiras linhas do arquivo CSV
+                # Display the first 10 rows of the CSV file
                 st.dataframe(df.head(10))
 
-                # Botão para fazer o upload
-                if st.button("Fazer Upload"):
+                # Button to upload the file
+                if st.button("Upload"):
                     if storage_client is not None:
-                        # Defina o nome do objeto (arquivo) no GCS
+                        # Set the object (file) name in GCS
                         blob_name = uploaded_file.name
 
                         try:
-                            # Carregue o arquivo no GCS
+                            # Upload the file to GCS
                             bucket = storage_client.bucket(bucket_name)
                             blob = bucket.blob(blob_name)
                             blob.upload_from_filename(temp_file.name)
 
-                            st.success("Upload concluído com sucesso!")
+                            st.success("Upload completed successfully!")
                         except Exception as e:
-                            # Exiba a mensagem de erro
+                            # Display the error message
                             st.error(e)
                     else:
-                        st.error("Erro: Credenciais do Google Cloud não carregadas.")
+                        st.error("Error: Google Cloud credentials not loaded.")
             else:
-                st.error("O arquivo deve conter mais de 10 linhas.")
+                st.error("The file must have more than 10 rows.")
         else:
-            st.error("O arquivo deve ter as colunas 'data', 'lat', 'lon', 'veiculo'.")
+            st.error("The file must have columns 'data', 'lat', 'lon', 'vehicle'.")
     else:
-        st.error("O arquivo deve ser um CSV.")
+        st.error("The file must be a CSV.")
 
-# Fim do seu código
+# End of your code
