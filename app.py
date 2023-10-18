@@ -57,12 +57,16 @@ if uploaded_file is not None:
                         # Defina o nome do objeto (arquivo) no GCS
                         blob_name = uploaded_file.name
 
-                        # Carregue o arquivo no GCS
-                        bucket = storage_client.bucket(bucket_name)
-                        blob = bucket.blob(blob_name)
-                        blob.upload_from_filename(temp_file.name)
+                        try:
+                            # Carregue o arquivo no GCS
+                            bucket = storage_client.bucket(bucket_name)
+                            blob = bucket.blob(blob_name)
+                            blob.upload_from_filename(temp_file.name)
 
-                        st.success("Upload concluído com sucesso!")
+                            st.success("Upload concluído com sucesso!")
+                        except Exception as e:
+                            # Exiba a mensagem de erro
+                            st.error(e)
                     else:
                         st.error("Erro: Credenciais do Google Cloud não carregadas.")
             else:
