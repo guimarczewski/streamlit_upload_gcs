@@ -65,8 +65,11 @@ if uploaded_file is not None:
 
                             st.success("Upload concluído com sucesso!")
                         except Exception as e:
+                            # Extraia a mensagem de erro
+                            error_message = e.errors[0].message
+
                             # Exiba a mensagem de erro
-                            st.error(e)
+                            st.error(error_message)
                     else:
                         st.error("Erro: Credenciais do Google Cloud não carregadas.")
             else:
