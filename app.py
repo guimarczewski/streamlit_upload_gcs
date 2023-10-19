@@ -36,12 +36,10 @@ class GoogleCloudUploader:
                 if replace_existing:
                     try:
                         blob.upload_from_filename(temp_file.name)
-                        st.empty()  # Remove the previous message
                         st.success("Upload completed successfully!")
                     except Exception as e:
                         st.error(e)
                 elif cancel_upload:
-                    st.empty()  # Remove the previous message
                     st.warning("Upload canceled. The existing file will not be replaced.")
             else:
                 try:
@@ -77,33 +75,40 @@ class UploadCSVTab:
             self.uploader.load_credentials(uploaded_credentials)
 
         if uploaded_file:
-            if not uploaded_file.name.endswith(".csv"):
-                st.error("Select only CSV files.")
+            error_type = self.validate_csv_file(uploaded_file)
+            if error_type is not True:
+                self.show_error_message(error_type)
             else:
-                # Perform CSV validation
-                validation_failed = self.validate_csv(uploaded_file)
-
-                if validation_failed:
-                    st.error("CSV file does not meet validation criteria.")
-                else:
+                if st.button("Upload"):
                     self.uploader.upload_file(bucket_name, uploaded_file)
 
-    def validate_csv(self, uploaded_file):
-        try:
-            # Read the CSV file using pandas
-            df = pd.read_csv(uploaded_file)
-            
-            # Check if the CSV file has at least 10 lines
-            if len(df) < 10:
-                st.error("CSV file must contain more than 10 lines.")
-                return True
+    def validate_csv_file(self, uploaded_file):
+        # Verifique se a extensão do arquivo é `.csv`.
+        if not uploaded_file.name.endswith(".csv"):
+            return "invalid_extension"
 
-            # Check if the required columns are present
-            required_columns = ["data", "lat", "lon", "vehicle"]
-            missing_columns = [col for col in required_columns if col not in df.columns]
-            if missing_columns:
-                st.error(f"CSV file is missing required columns: {', '.join(missing_columns)}")
-                return True
+        # Verifique se o arquivo contém as colunas `data`, `lat`, `lon`, `vehicle`.
+        try:
+            df = pd.read_csv(uploaded_file)
+            if not all(col in df.columns for col in ["data", "lat", "lon", "vehicle"]):
+                return "missing_columns"
+        except Exception as e:
+            pass
+
+        # Verifique se o arquivo contém mais de 10 linhas.
+        if len(df) <= 10:
+            return "too_few_rows"
+
+        return True
+
+    def show_error_message(self, error_type):
+        if error_type == "invalid_extension":
+            st.error("The file must be a CSV file.")
+        elif error_type == "missing_columns":
+            st.error("The CSV file must contain the following columns: data, lat, lon, vehicle.")
+        elif error_type == "too_few_rows":
+            st.error("The CSV file must contain at least 11 rows.")
+
 
 def main():
     selected_tab = st.sidebar.selectbox("Select a tab:", ["Upload File", "Upload CSV with validation"])
