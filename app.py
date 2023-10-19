@@ -25,7 +25,7 @@ class GoogleCloudUploader:
                 temp_file.write(uploaded_file.read())
                 
             blob_name = uploaded_file.name
-            bucket = self storage_client.bucket(bucket_name)
+            bucket = self.storage_client.bucket(bucket_name)
             blob = bucket.blob(blob_name)
 
             if blob.exists():
