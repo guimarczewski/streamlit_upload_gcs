@@ -29,15 +29,18 @@ class GoogleCloudUploader:
             blob = bucket.blob(blob_name)
 
             if blob.exists():
-                replace_existing = st.checkbox("The file already exists. Do you want to replace it?")
-                if not replace_existing:
-                    st.warning("Upload canceled. The existing file will not be replaced.")
-                else:
+                st.warning("The file already exists. Do you want to replace it?")
+                replace_existing = st.button("Replace")
+                cancel_upload = st.button("Cancel")
+
+                if replace_existing:
                     try:
                         blob.upload_from_filename(temp_file.name)
                         st.success("Upload completed successfully!")
                     except Exception as e:
                         st.error(e)
+                elif cancel_upload:
+                    st.warning("Upload canceled. The existing file will not be replaced.")
             else:
                 try:
                     blob.upload_from_filename(temp_file.name)
