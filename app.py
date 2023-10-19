@@ -77,12 +77,13 @@ class UploadCSVTab:
             self.uploader.load_credentials(uploaded_credentials)
 
         if uploaded_file:
-            if st.button("Upload"):
-                # Perform CSV validation
-                if self.validate_csv(uploaded_file):
-                    self.uploader.upload_file(bucket_name, uploaded_file)
-                else:
-                    st.error("CSV file does not meet validation criteria.")
+            # Perform CSV validation
+            validation_failed = self.validate_csv(uploaded_file)
+
+            if validation_failed:
+                st.error("CSV file does not meet validation criteria.")
+            else:
+                self.uploader.upload_file(bucket_name, uploaded_file)
 
     def validate_csv(self, uploaded_file):
         try:
@@ -92,20 +93,14 @@ class UploadCSVTab:
             # Check if the CSV file has at least 10 lines
             if len(df) < 10:
                 st.error("CSV file must contain more than 10 lines.")
-                return False
+                return True
 
             # Check if the required columns are present
             required_columns = ["data", "lat", "lon", "vehicle"]
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 st.error(f"CSV file is missing required columns: {', '.join(missing_columns)}")
-                return False
-
-            return True
-        except Exception as e:
-            st.error(f"Error while validating CSV file: {e}")
-            return False
-
+                return True
 
 def main():
     selected_tab = st.sidebar.selectbox("Select a tab:", ["Upload File", "Upload CSV with validation"])
