@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "streamlit-upload-cloud"
+version = "0.1.0"
+description = "Streamlit project to upload files to clouds"
+authors = ["guimarczewski <guimarczewski@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.27.2"
+google-auth = "^2.23.3"
+pandas = "^2.1.1"
+google-cloud-storage = "1.38.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
