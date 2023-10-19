@@ -25,7 +25,7 @@ class GoogleCloudUploader:
                 temp_file.write(uploaded_file.read())
                 
             blob_name = uploaded_file.name
-            bucket = self.storage_client.bucket(bucket_name)
+            bucket = self storage_client.bucket(bucket_name)
             blob = bucket.blob(blob_name)
 
             if blob.exists():
@@ -36,10 +36,12 @@ class GoogleCloudUploader:
                 if replace_existing:
                     try:
                         blob.upload_from_filename(temp_file.name)
+                        st.empty()  # Remove the previous message
                         st.success("Upload completed successfully!")
                     except Exception as e:
                         st.error(e)
                 elif cancel_upload:
+                    st.empty()  # Remove the previous message
                     st.warning("Upload canceled. The existing file will not be replaced.")
             else:
                 try:
